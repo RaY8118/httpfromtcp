@@ -34,9 +34,8 @@ func main() {
 
 		_, err = conn.Write([]byte(line))
 		if err != nil {
-			fmt.Printf("error writing udp: %v", err)
+			log.Printf("error writing udp: %v", err)
 			continue
 		}
 	}
 }
-
