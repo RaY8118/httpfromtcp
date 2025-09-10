@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"ray8118/httpfromtcp/internal/headers"
+	"strconv"
 )
 
 type parserState string
@@ -12,6 +13,7 @@ type parserState string
 const (
 	StateInit    parserState = "init"
 	StateDone    parserState = "done"
+	StateBody    parserState = "body"
 	StateHeaders parserState = "headers"
 	StateError   parserState = "error"
 )
@@ -26,18 +28,32 @@ type Request struct {
 	RequestLine RequestLine
 	Headers     *headers.Headers
 	state       parserState
+	Body        string
 }
 
+func getInt(headers headers.Headers, name string, defaultValue int) int {
+	valueStr, exists := headers.Get(name)
+	if !exists {
+		return defaultValue
+	}
+
+	value, err := strconv.Atoi(valueStr)
+	if err != nil {
+		return defaultValue
+	}
+	return value
+}
 func newRequest() *Request {
 	return &Request{
 		state:   StateInit,
 		Headers: headers.NewHeaders(),
+		Body:    "",
 	}
 }
 
 var ErrorMalformedRequestLine = fmt.Errorf("malformed request line")
 var ErrorUnsupportedHttpVersion = fmt.Errorf("unsupported http version")
-var ErrorRequestInErrorState = fmt.Errorf("reqeust in error state")
+var ErrorRequestInErrorState = fmt.Errorf("request in error state")
 var SEPARATOR = []byte("\r\n")
 
 func parseRequestLine(b []byte) (*RequestLine, int, error) {
@@ -69,11 +85,20 @@ func parseRequestLine(b []byte) (*RequestLine, int, error) {
 
 }
 
+func (r *Request) hasBody() bool {
+	length := getInt(*r.Headers, "content-length", 0)
+	return length > 0
+}
+
 func (r *Request) parse(data []byte) (int, error) {
 	read := 0
 outer:
 	for {
 		currentData := data[read:]
+
+		if len(currentData) == 0 {
+			break outer
+		}
 		switch r.state {
 		case StateError:
 			return 0, ErrorRequestInErrorState
@@ -96,6 +121,7 @@ outer:
 			n, done, err := r.Headers.Parse(currentData)
 
 			if err != nil {
+				r.state = StateError
 				return 0, err
 			}
 
@@ -106,6 +132,25 @@ outer:
 			read += n
 
 			if done {
+				if r.hasBody() {
+					r.state = StateBody
+				} else {
+					r.state = StateDone
+				}
+			}
+
+		case StateBody:
+			length := getInt(*r.Headers, "content-length", 0)
+
+			if length == 0 {
+				panic("chunked not implemented")
+			}
+
+			remaining := min(length-len(r.Body), len(currentData))
+			r.Body += string(currentData[:remaining])
+			read += remaining
+
+			if len(r.Body) == length {
 				r.state = StateDone
 			}
 

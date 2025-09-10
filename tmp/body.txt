@@ -1,0 +1,12 @@
+Request line:
+- Method: POST
+- Target: /coffee
+- Version: 1.1
+Headers:
+- content-type  application/json
+- content-length  39
+- host  localhost:42069
+- user-agent  curl/8.15.0
+- accept  */*
+Body:
+{"type": "dark mode", "size": "medium"}
