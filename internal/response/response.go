@@ -4,8 +4,15 @@ import (
 	"fmt"
 	"io"
 	"ray8118/httpfromtcp/internal/headers"
+	"ray8118/httpfromtcp/internal/request"
 )
 
+type HandlerError struct {
+	StatusCode StatusCode
+	Message    string
+}
+
+type Handler func(w io.Writer, req *request.Request) *HandlerError
 type Response struct {
 }
 
@@ -44,7 +51,7 @@ func WriteStatusLine(w io.Writer, statusCode StatusCode) error {
 	case StatusOk:
 		statusLine = []byte("HTTP/1.1 200 OK\r\n")
 	case StatusBadRequest:
-			statusLine = []byte("HTTP/1.1 400 Bad Request\r\n")
+		statusLine = []byte("HTTP/1.1 400 Bad Request\r\n")
 	case StatusInternalServerError:
 		statusLine = []byte("HTTP/1.1 500 Internal Server Error\r\n")
 	default:
