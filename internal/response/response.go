@@ -29,6 +29,8 @@ type StatusCode int
 
 const (
 	StatusOk                  StatusCode = 200
+	StatusCreated             StatusCode = 201
+	StatusNotFound            StatusCode = 404
 	StatusBadRequest          StatusCode = 400
 	StatusInternalServerError StatusCode = 500
 )
@@ -47,6 +49,10 @@ func (w *Writer) WriteStatusLine(statusCode StatusCode) error {
 	switch statusCode {
 	case StatusOk:
 		statusLine = []byte("HTTP/1.1 200 OK\r\n")
+	case StatusCreated:
+		statusLine = []byte("HTTP/1.1 201 Created\r\n")
+	case StatusNotFound:
+		statusLine = []byte("HTTP/1.1 404 Not Found\r\n")
 	case StatusBadRequest:
 		statusLine = []byte("HTTP/1.1 400 Bad Request\r\n")
 	case StatusInternalServerError:
