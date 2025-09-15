@@ -3,6 +3,7 @@ package main
 import (
 	"crypto/sha256"
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
 	"io"
 	"log"
@@ -13,6 +14,16 @@ import (
 	"ray8118/httpfromtcp/internal/request"
 	"ray8118/httpfromtcp/internal/response"
 )
+
+type UserData struct {
+	ID   int    `json:"id"`
+	Name string `json:"name"`
+}
+
+type CreateUserRequest struct {
+	Name string `json:"name"`
+	Age  int    `json:"age"`
+}
 
 func respond400(w *response.Writer) {
 	body := []byte(`
@@ -173,6 +184,32 @@ func handleQueryTest(w *response.Writer, r *request.Request) {
 	w.WriteBody([]byte(body))
 }
 
+func handlerUserJSON(w *response.Writer, r *request.Request) {
+	user := UserData{
+		ID:   123,
+		Name: "Parth",
+	}
+	w.JSON(200, user)
+}
+
+func handleCreateUser(w *response.Writer, r *request.Request) {
+	var reqBody CreateUserRequest
+
+	err := json.Unmarshal([]byte(r.Body), &reqBody)
+	if err != nil {
+		errorResponse := map[string]string{"error": "Invalid request body"}
+		w.JSON(400, errorResponse)
+		return
+	}
+
+	newUser := UserData{
+		ID:   456,
+		Name: reqBody.Name,
+	}
+
+	w.JSON(201, newUser)
+}
+
 func handleHttpbin(w *response.Writer, r *request.Request) {
 	target := r.RequestLine.RequestTarget
 	res, err := http.Get("https://httpbin.org/" + target[len("/httpbin/"):])
@@ -218,6 +255,8 @@ func registerExampleHandlers(m *mux.Mux) {
 	m.HandleFunc("GET", "hello/{name}", handleHelloUser)
 	m.HandleFunc("POST", "/messages", handleCreateMessage)
 	m.HandleFunc("GET", "/query-test", handleQueryTest)
+	m.HandleFunc("GET", "/user", handlerUserJSON)
+	m.HandleFunc("POST", "/user", handleCreateUser)
 
 	// This is a bit of a catch-all for the httpbin proxy.
 	// A more advanced router would handle this more gracefully.

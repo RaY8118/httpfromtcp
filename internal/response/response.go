@@ -1,6 +1,7 @@
 package response
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"ray8118/httpfromtcp/internal/headers"
@@ -42,6 +43,29 @@ func GetDefaultHeaders(contentLen int) *headers.Headers {
 	h.Set("Content-Type", "text/plain")
 
 	return h
+}
+
+// JSON marshals the provided data strcuture to JSON, sets the
+// appropriate headers, and writes the response
+func (w *Writer) JSON(statusCode int, data interface{}) {
+	// Marshall the data into a JSON byte slice
+	jsonData, err := json.Marshal(data)
+	if err != nil {
+		// if marshalling fails, it's a server-side problem
+		// Wr send a 500 Internal Server Error
+		w.WriteStatusLine(StatusInternalServerError)
+		h := GetDefaultHeaders(0)
+		w.WriteHeaders(*h)
+	}
+
+	// Set the status line and headers
+	w.WriteStatusLine(StatusCode(statusCode))
+	h := GetDefaultHeaders(len(jsonData))
+	h.Set("Content-Type", "application/json")
+	w.WriteHeaders(*h)
+	// Write the JSON body
+	w.WriteBody(jsonData)
+
 }
 
 func (w *Writer) WriteStatusLine(statusCode StatusCode) error {
