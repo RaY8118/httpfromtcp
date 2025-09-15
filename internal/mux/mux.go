@@ -1,13 +1,19 @@
 package mux
 
 import (
+	"log"
 	"ray8118/httpfromtcp/internal/request"
 	"ray8118/httpfromtcp/internal/response"
 	"strings"
+	"time"
 )
 
 // HandlerFunc defines the signature for handlers that our Mux will use.
 type HandlerFunc func(w *response.Writer, r *request.Request)
+
+// Middleware is a function that takes a handler and returns a new handler.
+// This allows for chaining, where each middleware can perform some action before or after calling the next handler in the chain.
+type Middleware func(HandlerFunc) HandlerFunc
 
 // route holds the information for a single registered route.
 // This includes the HTTP method, the handler function, and the path
@@ -34,13 +40,36 @@ func NewMux() *Mux {
 	}
 }
 
+func Chain(h HandlerFunc, mws ...Middleware) HandlerFunc {
+	// Start with the final handler
+	handler := h
+
+	// Loop backwards through the middlewares, wrapping the current handler with each one
+	// This ensures they execute in hte correct order
+	for i := len(mws) - 1; i >= 0; i-- {
+		handler = mws[i](handler)
+	}
+	return handler
+
+}
+
+// LoggingMiddleware lofs the details of each request
+func LoggingMiddleware(next HandlerFunc) HandlerFunc {
+	return func(w *response.Writer, r *request.Request) {
+		start := time.Now()
+		next(w, r)
+
+		log.Printf("method=%s path=%s duration=%s", r.RequestLine.Method, r.RequestLine.RequestTarget, time.Since(start))
+	}
+}
+
 // HandleFunc registers a new handler function for the given method and path.
 func (m *Mux) HandleFunc(method, path string, handler HandlerFunc) {
 	newRoute := &route{
 		method:  method,
 		handler: handler,
 		// We trim the slashes and split the path so we can compare it part-by-part later.
-		parts:   strings.Split(strings.Trim(path, "/"), "/"),
+		parts: strings.Split(strings.Trim(path, "/"), "/"),
 	}
 	m.routes = append(m.routes, newRoute)
 }
