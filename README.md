@@ -1,16 +1,79 @@
 # HTTP Server from Scratch in Go
 
-This project is a hands-on exploration into the fundamentals of the HTTP protocol, built from the ground up in Go using only raw TCP sockets. What started as a simple TCP listener evolved into a mini, `net/http`-like web library, complete with a request router and dynamic URL parameters.
+[![Go Reference](https://pkg.go.dev/badge/ray8118/httpfromtcp.svg)](https://pkg.go.dev/ray8118/httpfromtcp)
+
+This project is a hands-on exploration into the fundamentals of the HTTP protocol, built from the ground up in Go using only raw TCP sockets. What started as a simple TCP listener evolved into a mini, `net/http`-like web library.
 
 The primary goal of this project was not to replace Go's excellent standard library, but to deconstruct and understand the magic that happens under the hood of a real web server.
 
 ## Features
 
-*   **Built from Raw TCP Sockets:** The server is built on `net.Listener`, handling raw TCP connections to parse and respond to HTTP requests.
-*   **Custom HTTP Parser:** Manually parses request lines, headers, and bodies according to the HTTP/1.1 protocol specification.
-*   **Dynamic Request Router (Mux):** A `net/http`-style multiplexer that can route requests based on both the HTTP method (GET, POST, etc.) and the URL path.
-*   **URL Parameter Support:** The router can extract dynamic parts from a URL, such as `/users/{id}`.
-*   **Reusable Library Structure:** The project is structured as a Go library, with a clean public API and a separate `examples` directory to showcase its usage.
+*   **HTTP Server from Scratch:** Built on `net.Listener`, handling raw TCP connections to parse and respond to HTTP/1.1 requests.
+*   **Custom Request Parser:** Manually parses request lines, headers, and bodies.
+*   **Request Router (Mux):** A `net/http`-style multiplexer that routes requests based on method and URL path.
+*   **Advanced Routing:** Supports dynamic URL parameters (e.g., `/users/{id}`) and query string parsing.
+*   **Middleware:** A flexible middleware pattern for chaining functions to process requests, perfect for logging, auth, etc.
+*   **JSON Helper:** A `response.Writer.JSON()` method for easily sending JSON responses.
+*   **Reusable Library Structure:** The project is structured as a Go library with a clean public API.
+
+## Installation
+
+To use this library in your own project, you can install it with `go get`:
+```bash
+go get ray8118/httpfromtcp@v0.1.0
+```
+
+## Usage
+
+Here is a complete example of how to create a simple API server using the library.
+
+```go
+package main
+
+import (
+	"fmt"
+	"log"
+
+	"ray8118/httpfromtcp"
+	"ray8118/httpfromtcp/internal/mux"
+	"ray8118/httpfromtcp/internal/request"
+	"ray8118/httpfromtcp/internal/response"
+)
+
+// Define a handler for your route
+func helloHandler(w *response.Writer, r *request.Request) {
+	// Use the JSON helper to send a response
+	name, ok := r.PathParams["name"]
+	if !ok {
+		name = "World"
+	}
+	
+	data := map[string]string{"message": fmt.Sprintf("Hello, %s!", name)}
+	w.JSON(200, data)
+}
+
+func main() {
+	// 1. Create a new router
+	m := mux.NewMux()
+
+	// 2. Register your handlers
+	m.HandleFunc("GET", "/hello", helloHandler)
+	m.HandleFunc("GET", "/hello/{name}", helloHandler)
+
+	// 3. Create a middleware chain
+	// The LoggingMiddleware will log every request
+	handlerChain := mux.Chain(m.ServeHTTP, mux.LoggingMiddleware)
+
+	fmt.Println("Starting server on :8080")
+
+	// 4. Start the server
+	// We wrap our chained handler in httpfromtcp.HandlerFunc to satisfy the interface
+	err := httpfromtcp.ListenAndServe(":8080", httpfromtcp.HandlerFunc(handlerChain))
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+```
 
 ## Project Structure
 
@@ -25,77 +88,15 @@ The primary goal of this project was not to replace Go's excellent standard libr
 │   └── server/
 ├── examples/
 │   └── simple-server/  # An example application using the library
-│       ├── main.go
-│       └── example_handlers.go
 └── go.mod
-```
-
-## Getting Started
-
-To run the example server, clone the repository and run the following command from the root directory:
-
-```bash
-go run ./examples/simple-server
-```
-
-The server will start on `localhost:42069`.
-
-### Example Requests
-
-You can use `curl` to interact with the running server:
-
-**GET a simple response:**
-```bash
-curl http://localhost:42069/
-```
-
-**GET a route with a URL parameter:**
-```bash
-curl http://localhost:42069/hello/Parth
-# Expected Output: Hello, Parth
-```
-
-**POST a new message:**
-```bash
-curl -X POST -d "This is a test message" http://localhost:42069/messages
-# Expected Output: Message created successfully: This is a test message
-```
-
-## Library API (A Quick Look)
-
-Using the library is designed to be simple and familiar to anyone who has used Go's `net/http` package. The example server's `main.go` is a great reference:
-
-```go
-package main
-
-import (
-	"log"
-
-	httpfromtcp "ray8118/httpfromtcp"
-	"ray8118/httpfromtcp/internal/mux"
-)
-
-func main() {
-	// Create a new mux
-	m := mux.NewMux()
-
-	// Register handlers
-	registerExampleHandlers(m)
-
-	log.Println("Starting server on :42069")
-
-	// Use the library's ListenAndServe function
-	httpfromtcp.ListenAndServe(":42069", m)
-}
 ```
 
 ## Roadmap
 
 This project is a continuous learning exercise. The next planned features are outlined in `IMPROVEMENTS.md` and include:
 
-*   A flexible Middleware pattern
-*   Enhanced response helpers (e.g., for JSON)
 *   Static file serving
+*   Configuration and Graceful Shutdown
 
 ## Inspiration
 
