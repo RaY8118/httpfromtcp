@@ -156,6 +156,23 @@ func handleCreateMessage(w *response.Writer, r *request.Request) {
 	w.WriteBody(body)
 }
 
+func handleQueryTest(w *response.Writer, r *request.Request) {
+	var body string
+	body += "Query Parameters:\n"
+
+	for key, values := range r.Query {
+		for _, v := range values {
+			body += fmt.Sprintf("- %s: %s\n", key, v)
+		}
+	}
+
+	w.WriteStatusLine(response.StatusOk)
+	h := response.GetDefaultHeaders(len(body))
+	h.Replace("Content-Type", "text/plain")
+	w.WriteHeaders(*h)
+	w.WriteBody([]byte(body))
+}
+
 func handleHttpbin(w *response.Writer, r *request.Request) {
 	target := r.RequestLine.RequestTarget
 	res, err := http.Get("https://httpbin.org/" + target[len("/httpbin/"):])
@@ -200,6 +217,7 @@ func registerExampleHandlers(m *mux.Mux) {
 	m.HandleFunc("GET", "/video", handleVideo)
 	m.HandleFunc("GET", "hello/{name}", handleHelloUser)
 	m.HandleFunc("POST", "/messages", handleCreateMessage)
+	m.HandleFunc("GET", "/query-test", handleQueryTest)
 
 	// This is a bit of a catch-all for the httpbin proxy.
 	// A more advanced router would handle this more gracefully.
