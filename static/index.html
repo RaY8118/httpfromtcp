@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Static Server Demo</title>
+    <style>
+        body {
+            background-color: black;
+            color: white;
+            font-family: monospace;
+            padding: 20px;
+        }
+        p {
+            font-size: 20px;
+            margin: 5px 0;
+        }
+        .typing {
+            width: 30ch;
+            animation: typing 3s steps(30), blink .5s step-end infinite alternate;
+            white-space: nowrap;
+            overflow: hidden;
+            border-right: 3px solid aqua;
+            display: inline-block;
+        }
+        @keyframes typing {
+            from { width: 0 }
+        }
+        @keyframes blink {
+            50% { border-color: transparent }
+        }
+        .glow {
+            color: aqua;
+            text-shadow: 0 0 10px aqua, 0 0 20px cyan, 0 0 40px deepskyblue;
+        }
+        button {
+            background-color: blueviolet;
+            color: white;
+            font-size: 18px;
+            padding: 8px 16px;
+            border: none;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: transform 0.2s ease, background-color 0.3s ease;
+        }
+        button:hover {
+            transform: scale(1.05);
+            background-color: indigo;
+        }
+        #console {
+            background: #111;
+            padding: 10px;
+            margin-top: 20px;
+            font-family: monospace;
+            color: lime;
+            height: 120px;
+            overflow-y: auto;
+            border: 1px solid #333;
+        }
+    </style>
+</head>
+<body>
+    <p class="typing">Hello World! Static server is alive 🚀</p>
+    <p class="glow">This is a test page served by Go static file server.</p>
+    <button id="button">Click me!</button>
+
+    <div id="console">&gt; Ready...</div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const button = document.getElementById("button");
+            const consoleBox = document.getElementById("console");
+
+            button.addEventListener("click", function() {
+                // Random background color
+                const colors = ["#ff006e", "#8338ec", "#3a86ff", "#ffbe0b", "#06d6a0"];
+                document.body.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+
+                // Log to console div
+                consoleBox.innerHTML += "<br>> Button clicked at " + new Date().toLocaleTimeString();
+                consoleBox.scrollTop = consoleBox.scrollHeight;
+            });
+        });
+    </script>
+</body>
+</html>
+

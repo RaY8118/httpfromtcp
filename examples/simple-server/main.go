@@ -5,6 +5,7 @@ import (
 
 	"ray8118/httpfromtcp"
 	"ray8118/httpfromtcp/internal/mux"
+	"ray8118/httpfromtcp/internal/static"
 )
 
 const addr = ":42069"
@@ -13,8 +14,20 @@ func main() {
 	// Create a new mux from our library
 	m := mux.NewMux()
 
-	// Register the example handlers (from example_handlers.go)
-	registerExampleHandlers(m)
+	m.HandleFunc("GET", "/", handleRoot)
+	m.HandleFunc("GET", "/yourproblem", handleYourProblem)
+	m.HandleFunc("GET", "/myproblem", handleMyProblem)
+	m.HandleFunc("GET", "/video", handleVideo)
+	m.HandleFunc("GET", "hello/{name}", handleHelloUser)
+	m.HandleFunc("POST", "/messages", handleCreateMessage)
+	m.HandleFunc("GET", "/query-test", handleQueryTest)
+	m.HandleFunc("GET", "/user", handlerUserJSON)
+	m.HandleFunc("POST", "/user", handleCreateUser)
+	m.HandleFunc("GET", "/static", static.Static)
+
+	m.HandleFunc("GET", "/httpbin/get", handleHttpbin)
+	m.HandleFunc("GET", "/httpbin/ip", handleHttpbin)
+	m.HandleFunc("GET", "/httpbin/user-agent", handleHttpbin)
 
 	log.Printf("Starting server on %s", addr)
 
@@ -27,4 +40,3 @@ func main() {
 		log.Fatalf("Server failed: %v", err)
 	}
 }
-

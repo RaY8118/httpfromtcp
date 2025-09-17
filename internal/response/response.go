@@ -36,6 +36,82 @@ const (
 	StatusInternalServerError StatusCode = 500
 )
 
+func Respond200(w *Writer) {
+	body := []byte(`
+	<html>
+	<head>
+		<title>200 OK</title>
+	</head>
+	<body>
+		<h1>Success!</h1>
+		<p>Your request was an absolute banger.</p>
+	</body>
+	</html>
+	`)
+	h := GetDefaultHeaders(len(body))
+	h.Replace("Content-type", "text/html")
+	w.WriteStatusLine(StatusOk)
+	w.WriteHeaders(*h)
+	w.WriteBody(body)
+}
+
+func Respond400(w *Writer) {
+	body := []byte(`
+<html>
+  <head>
+    <title>400 Bad Request</title>
+  </head>
+  <body>
+    <h1>Bad Request</h1>
+    <p>Your request honestly kinda sucked.</p>
+  </body>
+</html>
+	`)
+	h := GetDefaultHeaders(len(body))
+	h.Replace("Content-type", "text/html")
+	w.WriteStatusLine(StatusBadRequest)
+	w.WriteHeaders(*h)
+	w.WriteBody(body)
+}
+
+func Respond404(w *Writer) {
+	body := []byte(`
+<html>
+  <head>
+    <title>404 Not found</title>
+  </head>
+  <body> 
+    <h1>Not found</h1>
+    <p>Your request honestly kinda sucked.</p>
+  </body>
+</html>
+	`)
+	h := GetDefaultHeaders(len(body))
+	h.Replace("Content-type", "text/html")
+	w.WriteStatusLine(StatusBadRequest)
+	w.WriteHeaders(*h)
+	w.WriteBody(body)
+}
+
+func Respond500(w *Writer) {
+	body := []byte(`
+<html>
+  <head>
+    <title>500 Internal Server Error</title>
+  </head>
+  <body>
+    <h1>Internal Server Error</h1>
+    <p>Okay, you know what? This one is on me.</p>
+  </body>
+</html>
+	`)
+	h := GetDefaultHeaders(len(body))
+	h.Replace("Content-type", "text/html")
+	w.WriteStatusLine(StatusInternalServerError)
+	w.WriteHeaders(*h)
+	w.WriteBody(body)
+}
+
 func GetDefaultHeaders(contentLen int) *headers.Headers {
 	h := headers.NewHeaders()
 	h.Set("Content-Length", fmt.Sprintf("%d", contentLen))

@@ -34,9 +34,8 @@ type Request struct {
 	Headers     *headers.Headers
 	Body        string
 	PathParams  map[string]string
-	Query       url.Values // Correct type for query parameters
-
-	state parserState
+	Query       url.Values
+	state       parserState
 }
 
 // getInt is a helper to safely get an integer value from headers.

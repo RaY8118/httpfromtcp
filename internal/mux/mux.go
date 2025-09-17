@@ -53,7 +53,7 @@ func Chain(h HandlerFunc, mws ...Middleware) HandlerFunc {
 
 }
 
-// LoggingMiddleware lofs the details of each request
+// LoggingMiddleware logs the details of each request
 func LoggingMiddleware(next HandlerFunc) HandlerFunc {
 	return func(w *response.Writer, r *request.Request) {
 		start := time.Now()
