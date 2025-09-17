@@ -52,35 +52,25 @@ Middleware allows you to chain functions to process a request before it reaches 
     *   **Logger:** A simple middleware that logs the request method, path, and how long it took to process.
     *   **Authentication:** A middleware that checks for an `Authorization` header and rejects the request if it's not valid.
 
-## Step 4: Enhancing the `response.Writer`
+## Step 4: Enhancing the `response.Writer` (Done)
 
-Your `response.Writer` can be made more powerful and easier to use.
+The `response.Writer` has been enhanced with helper functions for common response types.
 
-**Goal:** Add helper functions for common response types.
+**Features:**
 
-**How-to:**
+*   **`JSON()` method:** Easily send JSON responses.
+*   **`Respond200`, `Respond400`, `Respond404`, `Respond500`:** Helper functions for standard HTTP responses.
 
-1.  **`JSON()` method:**
-    *   Create a `JSON()` method on the `response.Writer` that takes a Go struct, marshals it to JSON, sets the `Content-Type` header to `application/json`, and writes the response.
+## Step 5: Static File Server (Done)
 
-2.  **`HTML()` method:**
-    *   Similar to `JSON()`, but for HTML content. It would set the `Content-Type` to `text/html`.
+A static file server has been implemented to serve directories of static files.
 
-3.  **`StaticFile()` method:**
-    *   A method to serve a single static file. It would take a file path, read the file, and set the appropriate `Content-Type` based on the file extension.
+**Features:**
 
-## Step 5: Static File Server
+*   Serves files from a specified directory.
+*   Handles content types based on file extension.
+*   Defaults to serving `index.html` for directory requests.
 
-Create a handler that can serve an entire directory of static files.
-
-**Goal:** Serve assets like CSS, JavaScript, and images.
-
-**How-to:**
-
-1.  **Create a `FileServer` handler:**
-    *   This handler will take a directory path as input.
-    *   When a request comes in, it will map the request path to a file path within the specified directory.
-    *   It will read the file and serve it with the correct `Content-Type`. Be careful about security here to prevent directory traversal attacks (`../`).
 
 ## Step 6: Configuration and Graceful Shutdown
 
