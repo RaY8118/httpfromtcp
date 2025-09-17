@@ -13,14 +13,15 @@ The primary goal of this project was not to replace Go's excellent standard libr
 *   **Request Router (Mux):** A `net/http`-style multiplexer that routes requests based on method and URL path.
 *   **Advanced Routing:** Supports dynamic URL parameters (e.g., `/users/{id}`) and query string parsing.
 *   **Middleware:** A flexible middleware pattern for chaining functions to process requests, perfect for logging, auth, etc.
-*   **JSON Helper:** A `response.Writer.JSON()` method for easily sending JSON responses.
+*   **Response Helpers:** Includes helpers like `JSON()` for easy JSON responses and `Respond200`, `Respond400`, etc., for standard HTTP responses.
+*   **Static File Serving:** Serve static files and directories.
 *   **Reusable Library Structure:** The project is structured as a Go library with a clean public API.
 
 ## Installation
 
 To use this library in your own project, you can install it with `go get`:
 ```bash
-go get ray8118/httpfromtcp@v0.1.0
+go get ray8118/httpfromtcp@v0.2.0
 ```
 
 ## Usage
@@ -38,6 +39,7 @@ import (
 	"ray8118/httpfromtcp/internal/mux"
 	"ray8118/httpfromtcp/internal/request"
 	"ray8118/httpfromtcp/internal/response"
+	"ray8118/httpfromtcp/internal/static"
 )
 
 // Define a handler for your route
@@ -59,6 +61,8 @@ func main() {
 	// 2. Register your handlers
 	m.HandleFunc("GET", "/hello", helloHandler)
 	m.HandleFunc("GET", "/hello/{name}", helloHandler)
+	m.HandleFunc("GET", "/static/", static.Static)
+
 
 	// 3. Create a middleware chain
 	// The LoggingMiddleware will log every request
@@ -85,7 +89,8 @@ func main() {
 │   ├── mux/
 │   ├── request/
 │   ├── response/
-│   └── server/
+│   ├── server/
+│   └── static/
 ├── examples/
 │   └── simple-server/  # An example application using the library
 └── go.mod
@@ -95,7 +100,6 @@ func main() {
 
 This project is a continuous learning exercise. The next planned features are outlined in `IMPROVEMENTS.md` and include:
 
-*   Static file serving
 *   Configuration and Graceful Shutdown
 
 ## Inspiration
